@@ -1,4 +1,4 @@
-NuML_Toolkit
+NuML_Zephyr_Toolkit
 ===
 ### Windows tools for Nuvoton machine learning base on Zephyr platform.
 ## Tools 

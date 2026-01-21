@@ -18,6 +18,13 @@ if ret.returncode != 0:
 # Change directory to the workspace
 os.chdir("zephyrproject")
 
+# Install external modules specified in the west manifest
+command = ["west", "config", "manifest.project-filter", "--", "+tflite-micro"]
+ret = subprocess.run(command)
+if ret.returncode != 0:
+    print("Failed to initialize west manifest and retcode =", ret.returncode)
+    sys.exit(ret.returncode)
+
 # Update the workspace to fetch all repositories
 command = ["west", "update"]
 ret = subprocess.run(command)
@@ -32,12 +39,8 @@ if ret.returncode != 0:
     print("Failed to export Zephyr package and retcode =", ret.returncode)
     sys.exit(ret.returncode)
 
-# Change directory to the workspace
-os.chdir("zephyrproject")
-
 # Install the Python dependencies
 command = ["cmd", "/c", "zephyr\\scripts\\utils\\west-packages-pip-install.cmd"]
-
 ret = subprocess.run(command)
 if ret.returncode != 0:
     print("Failed to install Zephyr Python dependencies and retcode =", ret.returncode)

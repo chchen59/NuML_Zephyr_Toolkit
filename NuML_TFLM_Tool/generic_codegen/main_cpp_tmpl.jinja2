@@ -6,6 +6,8 @@
  * @copyright SPDX-License-Identifier: Apache-2.0
  * @copyright Copyright (C) 2024 Nuvoton Technology Corp. All rights reserved.
  ******************************************************************************/
+#include <zephyr/logging/log.h>
+
 #include "BoardInit.hpp"      /* Board initialisation */
 
 #include "BufAttributes.hpp" /* Buffer attributes to be applied */
@@ -16,17 +18,6 @@
 
 #include "ModelFileReader.h"
 #include "ff.h"
-
-//#define LOG_LEVEL_TRACE       0
-//#define LOG_LEVEL_DEBUG       1
-//#define LOG_LEVEL_INFO        2
-//#define LOG_LEVEL_WARN        3
-//#define LOG_LEVEL_ERROR       4
-
-#define LOG_LEVEL             2
-#include "log_macros.h"      /* Logging macros (optional) */
-
-//#define __PROFILE__
 
 #if !defined(__WITHOUT_HYPERRAM__)
 {{define_SD_model_load}}
@@ -79,12 +70,12 @@ static int32_t PrepareModelToHyperRAM(void)
 	
 	if(!ModelFileReader_Initialize(MODEL_FILE))
 	{
-        printf_err("Unable open model %s\n", MODEL_FILE);		
+        LOG_ERR("Unable open model %s", MODEL_FILE);		
 		return -1;
 	}
 	
 	i32FileSize = ModelFileReader_FileSize();
-    info("Model file size %i \n", i32FileSize);
+    LOG_INF("Model file size %i ", i32FileSize);
 
 	while(i32FileReadIndex < i32FileSize)
 	{
@@ -96,7 +87,7 @@ static int32_t PrepareModelToHyperRAM(void)
 	
 	if(i32FileReadIndex < i32FileSize)
 	{
-        printf_err("Read Model file size is not enough\n");		
+        LOG_ERR("Read Model file size is not enough");		
 		return -2;
 	}
 	
@@ -114,7 +105,7 @@ static int32_t PrepareModelToHyperRAM(void)
 		
 		if(std::memcmp(au8TempBuf, (void *)(MODEL_AT_HYPERRAM_ADDR + i32FileReadIndex), i32Read)!= 0)
 		{
-			printf_err("verify the model file content is incorrect at %i \n", i32FileReadIndex);		
+			LOG_ERR("verify the model file content is incorrect at %i ", i32FileReadIndex);		
 			return -3;
 		}
 		i32FileReadIndex += i32Read;
@@ -137,14 +128,14 @@ int main()
 	/* Copy model file from SD to HyperRAM*/
 	int32_t i32ModelSize;
 
-	printf("==================== Load model file from SD card =================================\n"); 
-	printf("Please copy NN_ModelInference/Model/xxx_vela.tflite to SDCard:/nn_model.tflite     \n"); 
-	printf("===================================================================================\n"); 
+	LOG_INF("==================== Load model file from SD card ================================="); 
+	LOG_INF("Please copy NN_ModelInference/Model/xxx_vela.tflite to SDCard:/nn_model.tflite     "); 
+	LOG_INF("==================================================================================="); 
 	i32ModelSize = PrepareModelToHyperRAM();
 	
 	if(i32ModelSize <= 0 )
 	{
-        printf_err("Failed to prepare model\n");
+        LOG_ERR("Failed to prepare model");
         return 1;
 	}
 
@@ -156,7 +147,7 @@ int main()
                     (unsigned char *)MODEL_AT_HYPERRAM_ADDR,
                     i32ModelSize))
     {
-        printf_err("Failed to initialise model\n");
+        LOG_ERR("Failed to initialise model");
         return 1;
     }
 
@@ -170,29 +161,10 @@ int main()
                     arm::app::nn::GetModelPointer(),
                     arm::app::nn::GetModelLen()))
     {
-        printf_err("Failed to initialise model\n");
+        LOG_ERR("Failed to initialise model");
         return 1;
     }
 #endif
-
-    /* Setup cache poicy of tensor arean buffer */
-    info("Set tesnor arena cache policy to WTRA \n");
-    const std::vector<ARM_MPU_Region_t> mpuConfig =
-    {
-        {
-            // SRAM for tensor arena
-            ARM_MPU_RBAR(((unsigned int)arm::app::tensorArena),        // Base
-                         ARM_MPU_SH_NON,    // Non-shareable
-                         0,                 // Read-only
-                         1,                 // Non-Privileged
-                         1),                // eXecute Never enabled
-            ARM_MPU_RLAR((((unsigned int)arm::app::tensorArena) + ACTIVATION_BUF_SZ - 1),        // Limit
-                         eMPU_ATTR_CACHEABLE_WTRA) // Attribute index - Write-Through, Read-allocate
-        },
-    };
-
-    // Setup MPU configuration
-    InitPreDefMPURegion(&mpuConfig[0], mpuConfig.size());
 
 	size_t numOutput = model.GetNumOutputs();
 
@@ -234,7 +206,7 @@ int main()
 
         if (!model.RunInference())
         {
-            printf_err("Inference failed.");
+            LOG_ERR("Inference failed.");
             return 5;
         }
 
@@ -250,7 +222,7 @@ int main()
 
         if (pmu_get_systick_Count() > u64PerfCycle)
         {
-            info("Model inference rate: %llu inf/s \n", u64PerfFrames / EACH_PERF_SEC);
+            LOG_INF("Model inference rate: %llu inf/s ", u64PerfFrames / EACH_PERF_SEC);
 
             u64PerfCycle = pmu_get_systick_Count();
             u64PerfCycle += (SystemCoreClock * EACH_PERF_SEC);
@@ -266,7 +238,7 @@ int main()
 
 			for(int j =0; j < outputTensor->bytes; j ++)
 			{
-				debug("Tensor output[%d][%d]: %f\n",i,j, outputQuantParams.scale * static_cast<float>(tensorOutputData[i] - outputQuantParams.offset));
+				LOG_INF("Tensor output[%d][%d]: %f",i,j, outputQuantParams.scale * static_cast<float>(tensorOutputData[i] - outputQuantParams.offset));
 			}
 		}
 

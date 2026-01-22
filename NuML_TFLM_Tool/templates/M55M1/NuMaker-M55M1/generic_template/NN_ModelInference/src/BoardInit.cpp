@@ -14,7 +14,6 @@
 #define DESIGN_NAME "M55M1"
 #define HYPERRAM_SPIM_PORT SPIM0        //For NuMaker-M55M1 board
 
-#if defined(__LOAD_MODEL_FROM_SD__)
 static void SDCard0_PinConfig(void)
 {
 	/* Set multi-function pin for SDH */
@@ -38,7 +37,6 @@ static void SDCard1_PinConfig(void)
     SET_SD1_DAT2_PA10();
     SET_SD1_DAT3_PA11();
 }
-#endif
 
 static void SYS_Init(void)
 {
@@ -67,7 +65,6 @@ static void SYS_Init(void)
     /* Enable NPU module clock */
     CLK_EnableModuleClock(NPU0_MODULE);
 
-#if defined(__LOAD_MODEL_FROM_SD__)
 #if defined(__NUMAKER_M55M1__)
 /* Enable SDH0 module clock source as HCLK and SDH0 module clock divider as 4 */
     CLK_SetModuleClock(SDH0_MODULE, CLK_SDHSEL_SDH0SEL_APLL1_DIV2, CLK_SDHDIV_SDH0DIV(5));
@@ -79,22 +76,19 @@ static void SYS_Init(void)
     CLK_SetModuleClock(SDH1_MODULE, CLK_SDHSEL_SDH1SEL_APLL1_DIV2, CLK_SDHDIV_SDH1DIV(5));
     CLK_EnableModuleClock(SDH1_MODULE);
 #endif
-#endif
 
     /* Enable CCAP0 module clock */
     CLK_EnableModuleClock(CCAP0_MODULE);
 
-#if defined(__USE_HYPERRAM__)
+#if !defined(__WITHOUT_HYPERRAM__)
     HyperRAM_PinConfig(HYPERRAM_SPIM_PORT);
 #endif
 
-#if defined(__LOAD_MODEL_FROM_SD__)
 #if defined(__NUMAKER_M55M1__)
     SDCard0_PinConfig();
 #endif
 #if defined(__NUGESTUREAI_M55M1__)
     SDCard1_PinConfig();
-#endif
 #endif
 }
 
@@ -112,13 +106,12 @@ int BoardInit(void)
     SYS_Init();
     SYS_LockReg();                   /* Unlock register lock protect */
 
-#if defined(__USE_HYPERRAM__)
+#if !defined(__WITHOUT_HYPERRAM__)
     HyperRAM_Init(HYPERRAM_SPIM_PORT);
     /* Enter direct-mapped mode to run new applications */
     SPIM_HYPER_EnterDirectMapMode(HYPERRAM_SPIM_PORT);
 #endif
 
-#if defined(__LOAD_MODEL_FROM_SD__)
     /* SDH open SD card*/
 #if defined(__NUMAKER_M55M1__)
     SDH_Open_Disk(SDH0, CardDetect_From_GPIO);
@@ -126,8 +119,6 @@ int BoardInit(void)
 
 #if defined(__NUGESTUREAI_M55M1__)
     SDH_Open_Disk(SDH1, CardDetect_From_GPIO);
-#endif
-
 #endif
 
     printf("%s: complete\n", __FUNCTION__);

@@ -25,7 +25,7 @@ class GenericCodegen:
         template_path = 'generic_codegen'
 
         #Generate NNModel.hpp file
-        NNModel_hpp_file_path = os.path.join(self.project, 'Model', 'include', 'NNModel.hpp')
+        NNModel_hpp_file_path = os.path.join(self.project, 'src', 'Model', 'include', 'NNModel.hpp')
         NNModel_hpp_temp_file_path = os.path.join(template_path, 'NNModel_hpp_tmpl.jinja2')
         print(f'NNModel.hpp template path {NNModel_hpp_temp_file_path}')
         print(f'NNModel.hpp file path {NNModel_hpp_file_path}')
@@ -41,7 +41,7 @@ class GenericCodegen:
             NNModel_hpp_codegen.code_gen(NNModel_hpp_file, NNModel_hpp_temp_file_path, self.model)
 
         #Generate NNModel.cpp file
-        NNModel_cpp_file_path = os.path.join(self.project, 'Model', 'NNModel.cpp')
+        NNModel_cpp_file_path = os.path.join(self.project, 'src', 'Model', 'NNModel.cpp')
         NNModel_cpp_temp_file_path = os.path.join(template_path, 'NNModel_cpp_tmpl.jinja2')
         print(f'NNModel.cpp template path {NNModel_cpp_temp_file_path}')
         print(f'NNModel.cpp file path {NNModel_cpp_file_path}')
@@ -57,7 +57,7 @@ class GenericCodegen:
             NNModel_cpp_codegen.code_gen(NNModel_cpp_file, NNModel_cpp_temp_file_path, self.model)
 
         #Generate main.cpp file
-        main_file_path = os.path.join(self.project, 'main.cpp')
+        main_file_path = os.path.join(self.project, 'src', 'main.cpp')
         main_temp_file_path = os.path.join(template_path, 'main_cpp_tmpl.jinja2')
         print(f'template path {main_temp_file_path}')
         print(f'main file path {main_file_path}')
@@ -71,3 +71,4 @@ class GenericCodegen:
         with main_file:
             main_codegen = MainCCodegen()
             main_codegen.code_gen(main_file, main_temp_file_path, self.vela_summary)
+

@@ -30,7 +30,6 @@ target_include_directories(app PRIVATE
     ${APP_MODEL_DIR}/include
 )
 
-
 target_include_directories(app PRIVATE
     ${APP_THIRDPARTY_MLEVK_DIR}/source/application/api/common/include
     ${APP_THIRDPARTY_MLEVK_DIR}/source/log/include
@@ -55,19 +54,11 @@ if(CONFIG_APP_OD_PROFILE_ENABLED)
     target_compile_definitions(app PRIVATE __PROFILE__)
 endif()
 
-if(CONFIG_APP_OD_MODEL_FROM_SD)
-    target_compile_definitions(app PRIVATE __LOAD_MODEL_FROM_SD__)
-endif()
-
-if(CONFIG_APP_OD_USING_HYPERRAM)
-    target_compile_definitions(app PRIVATE __USE_HYPERRAM__)
-endif()
-
-
 if(${BOARD} STREQUAL "numaker_m55m1")
     target_compile_definitions(app PRIVATE __NUMAKER_M55M1__)
 elseif(${BOARD} STREQUAL "numaker_gai_m55m1")
     target_compile_definitions(app PRIVATE __NUGESTUREAI_M55M1__)
+    target_compile_definitions(app PRIVATE __WITHOUT_HYPERRAM__)
 endif()
 
 target_sources(app PRIVATE

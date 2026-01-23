@@ -3,14 +3,14 @@ import logging
 import sys
 import traceback
 from project_generate import add_generate_parser
-'''
 from project_build import add_build_parser
+'''
 from project_flash import add_flash_parser
 from project_deploy import add_deploy_parser
 '''
 
 #REGISTERED_PARSER = [add_generate_parser, add_build_parser, add_flash_parser, add_deploy_parser]
-REGISTERED_PARSER = [add_generate_parser]
+REGISTERED_PARSER = [add_generate_parser, add_build_parser]
 
 def register_parser(make_subparser):
     """

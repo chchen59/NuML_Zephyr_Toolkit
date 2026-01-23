@@ -83,6 +83,7 @@ target_sources(app PRIVATE
 
 target_sources(app PRIVATE
     ${APP_MODEL_DIR}/NNModel.cpp
+    ${APP_MODEL_DIR}/NN_Model_INT8.tflite.cpp
 )
 
 target_sources(app PRIVATE

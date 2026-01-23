@@ -12,7 +12,7 @@ PROJECT_GEN_DIR_PREFIX = 'ProjGen_'
 
 board_list = [
     #board name, zephry baoard name, MCU
-    ['NuMaker-M55M1', 'numaker-m55m1', 'M55M1'],   
+    ['NuMaker-M55M1', 'numaker_m55m1', 'M55M1'],   
     ['NuGestureAI-M55M1', 'numaker_gai_m55m1', 'M55M1'],   
 ]
 
@@ -48,7 +48,7 @@ def add_generate_parser(subparsers, _):
     parser.add_argument("--output_path", help="specify output file path", required=True)
     parser.add_argument("--board", help="specify target board name", required=True)
     parser.add_argument("--templates_path", help="specify template path")
-    parser.add_argument("--zephyrproject_path", help="specify zephyr project path")
+    parser.add_argument("--workspace_path", help="specify zephyr workspace path")
     parser.add_argument("--model_arena_size", help="specify the size of arena cache memory in bytes", default='0')
     parser.add_argument("--vela_extra_option", help="specify vela extra options")
     parser.add_argument("--application", help="specify application scenario generic/imgclass/objdet/objdet_yolox", default='generic')
@@ -117,7 +117,7 @@ def prepare_proj_resource(board_info, project_path, templates_path, vela_model_f
     print('copy resources to autogen project directory')
 
     example_patch_src_path = os.path.join(templates_path, board_info[2], 'patch')
-    example_dest_path = os.path.join(project_path, board_info[2])
+    example_dest_path = os.path.join(project_path)
     print(example_dest_path)
     print(example_patch_src_path)
 
@@ -147,7 +147,7 @@ def prepare_proj_resource(board_info, project_path, templates_path, vela_model_f
 #project generate main function
 def project_generate(args):
     templates_path = args.templates_path 
-    zephyrproject_path = args.zephyrproject_path
+    workspace_path = args.workspace_path
     application_usage = args.application
 
     if not application_usage in application:
@@ -159,11 +159,11 @@ def project_generate(args):
     if templates_path == None:
         templates_path = os.path.join(os.path.dirname(__file__), 'templates')
 
-    if zephyrproject_path == None:
-        zephyrproject_path = os.path.join(os.path.dirname(__file__), '..', 'zephyrproject')
+    if workspace_path == None:
+        workspace_path = os.path.join(os.path.dirname(__file__), '..', 'zephyrproject')
 
     print("Using templates path: ", templates_path)
-    print("Using zephyrproject path: ", zephyrproject_path)
+    print("Using workspace path: ", workspace_path)
 
     board_found = False
 

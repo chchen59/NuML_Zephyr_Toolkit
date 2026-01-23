@@ -20,7 +20,7 @@
 
 #include <string.h>
 
-extern struct ethosu_driver ethosu_drv;     /* Default Arm Ethos-U NPU device driver object */
+struct ethosu_driver *ethosu_drv;     /* Default Arm Ethos-U NPU device driver object */
 static ethosu_pmu_counters npu_counters;    /* NPU counter local instance */
 
 /**
@@ -41,7 +41,7 @@ static bool counter_overflow(uint32_t pmu_counter_mask)
 {
     /* Check for overflow: The idle counter is 32 bit while the
        total cycle count is 64 bit. */
-    const uint32_t overflow_status = ETHOSU_PMU_Get_CNTR_OVS(&ethosu_drv);
+    const uint32_t overflow_status = ETHOSU_PMU_Get_CNTR_OVS(ethosu_drv);
     return pmu_counter_mask & overflow_status ? true : false;
 }
 
@@ -49,6 +49,15 @@ void ethosu_pmu_init(void)
 {
     uint32_t i = 0;
     uint32_t evt_mask = ETHOSU_PMU_CCNT_Msk;
+
+    ethosu_drv = ethosu_reserve_driver();
+
+    if(ethosu_drv == NULL)
+    {
+        printf_err("Ethos-U NPU driver not found!\n");
+        return;
+    }
+
     ethosu_pmu_counters *counters = get_counter_instance();
     memset(counters, 0, sizeof(*counters));
 
@@ -85,21 +94,22 @@ void ethosu_pmu_init(void)
 #endif /* ETHOSU_DERIVED_NCOUNTERS >= 1 */
 
     /* Enable PMU. */
-    ETHOSU_PMU_Enable(&ethosu_drv);
+    ETHOSU_PMU_Enable(ethosu_drv);
 
     for (i = 0; i < ETHOSU_PMU_NCOUNTERS; ++i)
     {
-        ETHOSU_PMU_Set_EVTYPER(&ethosu_drv, i, counters->npu_evt_counters[i].event_type);
+        ETHOSU_PMU_Set_EVTYPER(ethosu_drv, i, counters->npu_evt_counters[i].event_type);
         evt_mask |= counters->npu_evt_counters[i].event_mask;
     }
 
     /* Reset overflow status. */
-    ETHOSU_PMU_Set_CNTR_OVS(&ethosu_drv, evt_mask);
+    ETHOSU_PMU_Set_CNTR_OVS(ethosu_drv, evt_mask);
 
     /* Enable counters for cycle and event counters. */
-    ETHOSU_PMU_CNTR_Disable(&ethosu_drv, evt_mask);
+    ETHOSU_PMU_CNTR_Disable(ethosu_drv, evt_mask);
     ethosu_pmu_reset_counters();
-    ETHOSU_PMU_CNTR_Enable(&ethosu_drv, evt_mask);
+    ETHOSU_PMU_CNTR_Enable(ethosu_drv, evt_mask);
+    ethosu_release_driver(ethosu_drv);
 }
 
 /**
@@ -108,8 +118,8 @@ void ethosu_pmu_init(void)
 void ethosu_pmu_reset_counters(void)
 {
     /* Reset all cycle and event counters. */
-    ETHOSU_PMU_CYCCNT_Reset(&ethosu_drv);
-    ETHOSU_PMU_EVCNTR_ALL_Reset(&ethosu_drv);
+    ETHOSU_PMU_CYCCNT_Reset(ethosu_drv);
+    ETHOSU_PMU_EVCNTR_ALL_Reset(ethosu_drv);
 }
 
 /**
@@ -130,11 +140,11 @@ ethosu_pmu_counters ethosu_get_pmu_counters(void)
         }
 
         counters->npu_evt_counters[i].counter_value =
-            ETHOSU_PMU_Get_EVCNTR(&ethosu_drv, i);
+            ETHOSU_PMU_Get_EVCNTR(ethosu_drv, i);
     }
 
     /* Total cycle count */
-    counters->npu_total_ccnt = ETHOSU_PMU_Get_CCNTR(&ethosu_drv);
+    counters->npu_total_ccnt = ETHOSU_PMU_Get_CCNTR(ethosu_drv);
 
     /* Derived counters */
 #if ETHOSU_DERIVED_NCOUNTERS >= 1

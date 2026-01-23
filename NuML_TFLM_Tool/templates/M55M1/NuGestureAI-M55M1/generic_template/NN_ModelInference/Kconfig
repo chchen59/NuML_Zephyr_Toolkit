@@ -1,0 +1,8 @@
+menu "NN_ModelInference Application Configurations"
+
+config APP_OD_PROFILE_ENABLED
+    bool "Application profiling enable"
+    default n
+
+endmenu
+source "Kconfig.zephyr"

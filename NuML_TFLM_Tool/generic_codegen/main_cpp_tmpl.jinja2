@@ -50,17 +50,19 @@ extern size_t GetModelLen();
 
 static int32_t PrepareModelToHyperRAM(void)
 {
-#if !defined(__USE_SD1__)
+#if defined(__NUMAKER_M55M1__)
 #define MODEL_FILE "0:\\nn_model.tflite"
-#else
+#endif
+#if defined(__NUGESTUREAI_M55M1__)
 #define MODEL_FILE "1:\\nn_model.tflite"
 #endif
 
 #define EACH_READ_SIZE 512
 	
-#if !defined(__USE_SD1__)
+#if defined(__NUMAKER_M55M1__)
     TCHAR sd_path[] = { '0', ':', 0 };    /* SD drive started from 0 */	
-#else
+#endif
+#if defined(__NUGESTUREAI_M55M1__)
     TCHAR sd_path[] = { '1', ':', 0 };    /* SD drive started from 0 */	
 #endif
 

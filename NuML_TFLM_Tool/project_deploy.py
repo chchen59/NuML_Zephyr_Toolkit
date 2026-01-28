@@ -1,0 +1,34 @@
+import argparse
+import sys
+import os
+from project_generate import project_generate
+from project_build import project_build
+from project_flash import project_flash
+
+def add_deploy_parser(subparsers, _):
+    """Include parser for 'deploy' subcommand"""
+    parser = subparsers.add_parser("deploy", help="deploy ml project")
+    parser.set_defaults(func=project_deploy)
+    parser.add_argument("--model_file", help="specify tflite file", required=True)
+    parser.add_argument("--output_path", help="specify output file path", required=True)
+    parser.add_argument("--board", help="specify target board name", required=True)
+    parser.add_argument("--templates_path", help="specify template path")
+    parser.add_argument("--workspace_path", help="specify zephyr workspace path")
+    parser.add_argument("--application", help="specify application scenario generic/imgclass/objdet/objdet_yolox", default='generic')
+    parser.add_argument("--model_arena_size", help="specify the size of arena cache memory in bytes", default='0')
+    parser.add_argument("--vela_extra_option", help="specify vela extra options")
+
+def project_deploy(args):
+    project_path = project_generate(args)
+    if project_path == None:
+        return
+
+    print(project_path)
+    setattr(args, 'project_path', project_path)
+    project_build_path = project_build(args)
+
+    if project_build_path == None:
+        return
+
+    setattr(args, 'build_path', project_build_path)
+    project_flash(args)

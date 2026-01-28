@@ -41,7 +41,6 @@ def project_build(args):
         return 'unable_generate'
 
     cur_work_dir = os.getcwd()
-
     os.chdir(workspace_path)
 
     print("Building project at: ", project_path)
@@ -63,11 +62,18 @@ def project_build(args):
     build_cmd = ' '.join(build_cmd)
     print("Build command: ", build_cmd)
 
-    try:
-        subprocess.run(build_cmd, shell=True)
+    ret = subprocess.run(build_cmd, shell=True)
+    if ret.returncode == 0:
         print("Build completed successfully.")
-    except subprocess.CalledProcessError as e:
-        print("Build failed with error: ", e)
+    else:
+        print("Build failed.")
 
-    os.chdir(cur_work_dir)
-
+    binary_path = os.path.join(build_path, 'zephyr', 'zephyr.bin')
+    if os.path.exists(binary_path):
+        print("Binary file located at: ", binary_path)
+        os.chdir(cur_work_dir)
+        return build_path
+    else:
+        print("Binary file not found.")
+        os.chdir(cur_work_dir)
+        return None

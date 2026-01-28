@@ -1,6 +1,6 @@
 NuML_Zephyr_Toolkit
 ===
-### Windows tools for Nuvoton machine learning platform base on Zephyr.
+### Windows command line tools for Nuvoton machine learning platform base on Zephyr.
 ## Tools 
 * [NuML_TFLM_Tool](NuML_TFLM_Tool/README.md) : Tool for machine learning project generate, build and flash base on TFLM framework
 * vela: Arm model compiler for NPU accelerator  

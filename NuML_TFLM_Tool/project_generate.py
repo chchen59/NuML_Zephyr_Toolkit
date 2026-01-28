@@ -7,6 +7,7 @@ import shutil
 import subprocess
 
 from generic_codegen.generic_codegen import GenericCodegen
+from imgclass_codegen.imgclass_codegen import ImgClassCodegen
 
 PROJECT_GEN_DIR_PREFIX = 'ProjGen_'
 
@@ -223,6 +224,8 @@ def project_generate(args):
     # Generate model.hpp/cpp or main.cpp
     if application_usage == 'generic':
         codegen = GenericCodegen.from_args(vela_model_file_path, project_example_path, vela_summary_file_path, app='generic')
+    elif application_usage == 'imgclass':
+        codegen = ImgClassCodegen.from_args(vela_model_file_path, project_example_path, vela_summary_file_path, app='imagclass')
 
     codegen.code_gen()
 

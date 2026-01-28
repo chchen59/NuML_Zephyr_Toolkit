@@ -161,5 +161,4 @@ target_link_libraries(app PRIVATE
 )
 
 # Add platform specific linker source snippet
-zephyr_linker_sources(SECTIONS sram2_section.ld)
-zephyr_linker_sources(SECTIONS sram_hyperram_section.ld)
+zephyr_linker_sources(SECTIONS sram_non-cache_section.ld)

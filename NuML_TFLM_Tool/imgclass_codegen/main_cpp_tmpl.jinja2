@@ -76,22 +76,26 @@ extern size_t GetModelLen();
 
 /* Image processing initiate function */
 //Used by omv library
-#if defined(__USE_UVC__)
-//UVC only support QVGA, QQVGA
-#define GLCD_WIDTH	320
-#define GLCD_HEIGHT	240
+#if defined(__PREVIEW_SUPPORT__)
+    //UVC only support QVGA, QQVGA
+    #define GLCD_WIDTH  320
+    #define GLCD_HEIGHT 240
+    #define IMGAE_COLOR_PIXEL_FORMAT    PIXFORMAT_RGB565
+    #define IMGAE_COLOR_BPP 2
 #else
-#define GLCD_WIDTH 320
-#define GLCD_HEIGHT 240
+    #define GLCD_WIDTH  224
+    #define GLCD_HEIGHT 224
+    #define IMGAE_COLOR_PIXEL_FORMAT    PIXFORMAT_RGB888
+    #define IMGAE_COLOR_BPP 3
 #endif
 
 //RGB565
-#define IMAGE_FB_SIZE	(GLCD_WIDTH * GLCD_HEIGHT * 2)
+#define IMAGE_FB_SIZE	(GLCD_WIDTH * GLCD_HEIGHT * IMGAE_COLOR_BPP)
 
 #undef OMV_FB_SIZE
 #define OMV_FB_SIZE (IMAGE_FB_SIZE + 1024)
 
-__attribute__((section(".bss.vram.data"), aligned(32))) static char fb_array[OMV_FB_SIZE + OMV_FB_ALLOC_SIZE];
+__attribute__((section(".bss.vram.data"), aligned(32))) static char fb_array[OMV_FB_SIZE];
 __attribute__((section(".bss.vram.data"), aligned(32))) static char jpeg_array[OMV_JPEG_BUF_SIZE];
 
 char *_fb_base = NULL;
@@ -105,12 +109,12 @@ static void omv_init()
 
     frameBuffer.w = GLCD_WIDTH;
     frameBuffer.h = GLCD_HEIGHT;
-    frameBuffer.size = GLCD_WIDTH * GLCD_HEIGHT * 2;
-    frameBuffer.pixfmt = PIXFORMAT_RGB565;
+    frameBuffer.size = GLCD_WIDTH * GLCD_HEIGHT * IMGAE_COLOR_BPP;
+    frameBuffer.pixfmt = IMGAE_COLOR_PIXEL_FORMAT;
 
     _fb_base = fb_array;
     _fb_end =  fb_array + OMV_FB_SIZE - 1;
-    _fballoc = _fb_base + OMV_FB_SIZE + OMV_FB_ALLOC_SIZE;
+    _fballoc = _fb_base + OMV_FB_SIZE;
     _jpeg_buf = jpeg_array;
 
     fb_alloc_init0();
@@ -304,7 +308,12 @@ int main()
 
     //Setup image senosr
     ImageSensor_Init(frameBuffer.w, frameBuffer.h);
+
+#if defined(__PREVIEW_SUPPORT__)
     ImageSensor_Config(eIMAGE_FMT_RGB565, frameBuffer.w, frameBuffer.h, true);
+#else
+    ImageSensor_Config(eIMAGE_FMT_RGB888_U8, frameBuffer.w, frameBuffer.h, true);
+#endif
 
 #if defined (__USE_DISPLAY__)
     char szDisplayText[160];

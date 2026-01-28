@@ -19,4 +19,15 @@ NuML_Zephyr_Toolkit
     ~~~
     pip install -r requirements.txt
     ~~~  
+2. Install Zephyr dependence window tools  
+    a. Open a Command Prompt(cmd.exe) or PowerShell terminal window. Press the Windows key, type ```cmd.exe``` or PowerShell and click on thre result.  
+    b. Use winget to install the required dependencies:
+    ~~~
+    winget install Kitware.CMake Ninja-build.Ninja oss-winget.gperf Git.Git oss-winget.dtc wget 7zip.7zip
+    ~~~
+3. Setup Zephyr workspace including Zephyr source, toolchain and Python dependence packages.
+    ~~~
+    python setup_zephyr.py
+    ~~~
+
 

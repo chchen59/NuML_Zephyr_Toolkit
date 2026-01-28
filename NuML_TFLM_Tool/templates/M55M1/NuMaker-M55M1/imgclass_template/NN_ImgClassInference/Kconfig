@@ -1,0 +1,48 @@
+menu "NN_ImgClassInference Application Configurations"
+
+config APP_OD_PROFILE_ENABLED
+    bool "Application profiling enable"
+    default n
+
+config APP_OD_UVC_SHOW_IMAGE
+    bool "Show result image over UVC"
+    default y
+
+config APP_OD_LCD_SHOW_IMAGE
+    bool "Show result image over LCD"
+    default y
+
+if APP_OD_LCD_SHOW_IMAGE
+
+choice
+    prompt "LCD select"
+    default LT7381_MPU_PANEL
+        
+config  LT7381_MPU_PANEL
+    bool "Use LT7381 panel"
+
+config  FSA506_MPU_PANEL
+    bool "Use FSA506 panel"
+
+config  ILI9341_SPI_PANEL
+    bool "Use ILI9341 panel"
+
+endchoice
+
+endif
+
+choice
+    prompt "Image Sensor select"
+    default CMOS_HM1055_SENSOR  
+
+config CMOS_HM1055_SENSOR
+    bool "Use HM1055 sensor"
+
+config CMOS_GC0308_SENSOR
+    bool "Use GC0308 sensor"
+
+endchoice
+
+
+endmenu
+source "Kconfig.zephyr"

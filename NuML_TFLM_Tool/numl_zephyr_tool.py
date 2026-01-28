@@ -34,7 +34,7 @@ def _main(argv):
     """NuML_TFLM_Tool command line interface."""
 
     parser = argparse.ArgumentParser(
-        prog="numl-zephyr",
+        prog="numl-zephyr-tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="Nuvoton ML toolkit for zephry platform",
         epilog=__doc__,

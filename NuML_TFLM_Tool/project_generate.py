@@ -8,6 +8,8 @@ import subprocess
 
 from generic_codegen.generic_codegen import GenericCodegen
 from imgclass_codegen.imgclass_codegen import ImgClassCodegen
+from objdet_codegen.objdet_codegen import ObjDetCodegen
+#from objdet_yolox_codegen.objdet_yolox_codegen import ObjDetYoloXCodegen
 
 PROJECT_GEN_DIR_PREFIX = 'ProjGen_'
 
@@ -226,6 +228,8 @@ def project_generate(args):
         codegen = GenericCodegen.from_args(vela_model_file_path, project_example_path, vela_summary_file_path, app='generic')
     elif application_usage == 'imgclass':
         codegen = ImgClassCodegen.from_args(vela_model_file_path, project_example_path, vela_summary_file_path, app='imagclass')
+    elif application_usage == 'objdet':
+        codegen = ObjDetCodegen.from_args(vela_model_file_path, project_example_path, vela_summary_file_path, app='objdet')
 
     codegen.code_gen()
 

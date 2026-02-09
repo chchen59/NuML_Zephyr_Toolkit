@@ -1,4 +1,4 @@
-NuML_Zephyr_Tool
+NuML_TFLM_Tool
 ===
 ### Machine learning MCU project generate, build and flash utility. Base on TFLM and Zephyr framework. 
 ## Support list

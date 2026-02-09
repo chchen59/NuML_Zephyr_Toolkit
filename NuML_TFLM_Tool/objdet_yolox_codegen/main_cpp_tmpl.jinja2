@@ -307,6 +307,37 @@ static int32_t PrepareModelToHyperRAM(void)
     return i32FileSize;
 }
 
+// Resize source image to model input tensor size
+static void ResizeImageToInputTensor(image_t *srcImg, TfLiteTensor *inputTensor, int inputImgCols, int inputImgRows)
+{
+    image_t resizeImg;
+    rectangle_t ROIRect;
+
+    ROIRect.x = 0;
+    ROIRect.y = 0;
+    ROIRect.w = srcImg->w;
+    ROIRect.h = srcImg->h;
+
+    resizeImg.w = inputImgCols;
+    resizeImg.h = inputImgRows;
+    resizeImg.data = (uint8_t *)inputTensor->data.data; //direct resize to input tensor buffer
+    resizeImg.pixfmt = PIXFORMAT_RGB888;
+
+    imlib_nvt_scale(srcImg, &resizeImg, &ROIRect);
+}
+
+// Copy and quantize image data to int8 tensor buffer
+static void CopyImgToTensorInt8(void* srcData, void *destData, const size_t maxImageSize)
+{
+    auto* tmp_req_data = static_cast<uint8_t*>(srcData);
+    auto* tmp_signed_req_data = static_cast<int8_t*>(destData);
+
+    for (size_t i = 0; i < maxImageSize; i++) {
+        tmp_signed_req_data[i] = (int8_t) (
+                (int32_t) (tmp_req_data[i]) - 128);
+    }
+}
+
 int main()
 {
     /* Initialise the UART module to allow printf related functions (if using retarget) */
@@ -453,42 +484,41 @@ int main()
 
         if (fullFramebuf)
         {
-            //resize full image to input tensor
-            image_t resizeImg;
+            image_t *frameImg = &fullFramebuf->frameImage;
 
-            roi.x = 0;
-            roi.y = 0;
-            roi.w = fullFramebuf->frameImage.w;
-            roi.h = fullFramebuf->frameImage.h;
-
-            resizeImg.w = inputImgCols;
-            resizeImg.h = inputImgRows;
-            resizeImg.data = (uint8_t *)inputTensor->data.data; //direct resize to input tensor buffer
-            resizeImg.pixfmt = PIXFORMAT_RGB888;
-
-#if defined(__PROFILE__)
-            u64StartCycle = pmu_get_systick_Count();
-#endif
-            imlib_nvt_scale(&fullFramebuf->frameImage, &resizeImg, &roi);
-
-#if defined(__PROFILE__)
-            u64EndCycle = pmu_get_systick_Count();
-            LOG_INF("resize cycles %llu ", (u64EndCycle - u64StartCycle));
-#endif
-
-#if defined(__PROFILE__)
-            u64StartCycle = pmu_get_systick_Count();
-#endif
-            /* If the data is signed. */
-            if (model.IsDataSigned())
+            if((frameImg->w != inputImgCols) || (frameImg->h != inputImgRows) || (frameImg->pixfmt != PIXFORMAT_RGB888))
             {
-                arm::app::image::ConvertImgToInt8(inputTensor->data.data, inputTensor->bytes);
-            }
+#if defined(__PROFILE__)
+                u64StartCycle = pmu_get_systick_Count();
+#endif
+                ResizeImageToInputTensor(frameImg, inputTensor, inputImgCols, inputImgRows);
+#if defined(__PROFILE__)
+                u64EndCycle = pmu_get_systick_Count();
+                LOG_INF("resize cycles %llu ", (u64EndCycle - u64StartCycle));
+#endif
 
 #if defined(__PROFILE__)
-            u64EndCycle = pmu_get_systick_Count();
-            LOG_INF("quantize cycles %llu ", (u64EndCycle - u64StartCycle));
+                u64StartCycle = pmu_get_systick_Count();
 #endif
+                arm::app::image::ConvertImgToInt8(inputTensor->data.data, inputTensor->bytes);
+#if defined(__PROFILE__)
+                u64EndCycle = pmu_get_systick_Count();
+                LOG_INF("quantize cycles %llu ", (u64EndCycle - u64StartCycle));
+#endif
+            }
+            else
+            {
+#if defined(__PROFILE__)
+                u64StartCycle = pmu_get_systick_Count();
+#endif
+                //direct copy and quantize
+                CopyImgToTensorInt8(frameImg->data, inputTensor->data.data, inputTensor->bytes);
+
+#if defined(__PROFILE__)
+                u64EndCycle = pmu_get_systick_Count();
+                LOG_INF("quantize cycles %llu ", (u64EndCycle - u64StartCycle));
+#endif
+            }
 
 #if defined(__PROFILE__)
             profiler.StartProfiling("Inference");
